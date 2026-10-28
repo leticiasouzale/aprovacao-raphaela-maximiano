@@ -233,6 +233,7 @@ html { scroll-behavior: smooth; }
 }
 </style>
 <style>html{color-scheme:light}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+<style>.main .stage + .stage{margin-top:clamp(72px,12vw,140px);padding-top:clamp(56px,9vw,100px);position:relative}.main .stage + .stage::before{content:'';position:absolute;top:0;left:50%;width:min(420px,60%);height:1px;transform:translateX(-50%);background:linear-gradient(90deg,transparent,#B98B3E,transparent);opacity:.6}</style>
 </head>
 <body>
 
@@ -265,91 +266,105 @@ html { scroll-behavior: smooth; }
     <svg class="intro-mark" viewBox="0 0 40 40" aria-hidden="true"><circle cx="17" cy="17" r="13" fill="#16233A" stroke="#B98B3E" stroke-width="1.2"/><circle cx="24" cy="24" r="10" fill="#B98B3E" opacity=".92"/><circle cx="21" cy="14" r="5" fill="#C99277"/></svg>
     <p class="intro-eyebrow">Sala de aprovação</p>
     <h1>Seu conteúdo está pronto para a sua <em>aprovação.</em></h1>
-    <p class="intro-lead"><b>Olá, Raphaela.</b> Assista ao vídeo, leia a legenda e diga se está tudo certo ou o que precisa mudar. Leva poucos minutos.</p>
+    <p class="intro-lead"><b>Olá, Raphaela.</b> Assista aos vídeos, leia as legendas e diga se está tudo certo ou o que precisa mudar. Leva poucos minutos.</p>
     <div class="stats">
       <div><small>Rodada</small><strong id="stDate">28 · 10 · 26</strong></div>
-      <div><small>Vídeos</small><strong>01</strong></div>
+      <div><small>Vídeos</small><strong>02</strong></div>
       <div><small>Formato</small><strong>9:16</strong></div>
       <div><small>Status</small><strong id="stStatus">Pendente</strong></div>
     </div>
   </div>
-  <button class="cue" id="cue" type="button" aria-label="Ir para o vídeo">Começar<i></i></button>
+  <button class="cue" id="cue" type="button" aria-label="Ir para os vídeos">Começar<i></i></button>
 </section>
 
-<main class="shell main" id="aprovar">
-  <div class="stage">
+<main class="shell main" id="aprovar"></main>
+
+<script>
+(function () {
+  var ENDPOINT = 'https://script.google.com/macros/s/AKfycbzCs6fICX-71VcEdHr0mL2vV4iXpwOMYN0t1po0fQdNL_VYuoQPf1cHCU1ItCuJqZQFJA/exec';
+  var $ = function (id) { return document.getElementById(id); };
+  var VIDEOS = [
+    { name: 'Reforma tributária', title: 'Reforma <em>tributária</em>', proposta: 'Pegar um assunto em alta e trazer adaptado para o nicho, instruindo e trazendo autoridade.', src: 'reforma.mp4', poster: 'poster.jpg', dur: '0:59', fallback: 59,
+      caption: '<p class="lead">Reforma tributária não é só assunto de contador. É assunto de gestão.</p><p>Quem enxerga o impacto antes consegue se planejar, em vez de apenas reagir.</p><p>Seu escritório já revisou os contratos pensando nisso?</p><p class="legal">Conteúdo informativo, que não substitui a orientação de um profissional.</p><p class="tags">#reformatributaria #gestaojuridica #advocacia #escritoriodeadvocacia #gestao</p>' },
+    { name: 'Mentoria', title: '<em>Mentoria</em>', proposta: 'Explicar que mentoria não é aula, é acompanhamento na prática, e convidar advogados e empresários a falar na DM.', src: 'mentoria.mp4', poster: 'poster2_1.jpg', dur: '0:58', fallback: 58,
+      caption: '<p class="lead">Mentoria não é aula. É acompanhamento.</p><p>Se você é advogado ou empresário e quer desenvolver a gestão do seu negócio com apoio na prática, me chama na DM e eu explico como funciona.</p><p>Quer saber como é esse acompanhamento por dentro? Comenta “mentoria” que eu te respondo.</p><p class="tags">#mentoria #gestaojuridica #advocacia #empreendedorismo #lideranca</p>' }
+  ];
+  var TPL = `<div class="stage">
     <section class="head">
-      <p class="eyebrow">Vídeo para aprovação</p>
-      <h2 class="vtitle">Reforma <em>tributária</em></h2>
-      <p class="proposta"><small>Proposta do vídeo</small>Pegar um assunto em alta e trazer adaptado para o nicho, instruindo e trazendo autoridade.</p>
+      <p class="eyebrow">Vídeo {{n}} de {{total}} · para aprovação</p>
+      <h2 class="vtitle">{{title}}</h2>
+      <p class="proposta"><small>Proposta do vídeo</small>{{proposta}}</p>
     </section>
 
-    <section class="player" aria-label="Vídeo reforma tributária">
+    <section class="player" aria-label="Vídeo {{n}}">
       <div class="frame-wrap">
         <div class="rings" aria-hidden="true"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="none" stroke="#B98B3E" stroke-opacity=".35" stroke-width=".18" stroke-dasharray="0.6 1.4"/><circle cx="50" cy="50" r="40" fill="none" stroke="#B98B3E" stroke-opacity=".5" stroke-width=".22"/><circle cx="50" cy="10" r="1.1" fill="#B98B3E"/></svg><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="none" stroke="#C99277" stroke-opacity=".5" stroke-width=".2"/><circle cx="94" cy="50" r="1" fill="#C99277"/></svg></div>
-        <canvas class="ambient" id="amb" width="36" height="64" aria-hidden="true"></canvas>
-        <div class="frame paused-ui" id="frame">
+        <canvas class="ambient" id="amb{{i}}" width="36" height="64" aria-hidden="true"></canvas>
+        <div class="frame paused-ui" id="frame{{i}}">
           <div class="frame-in">
-            <video id="vid" src="reforma.mp4" poster="poster.jpg" playsinline preload="metadata"></video>
+            <video id="vid{{i}}" src="{{src}}" poster="{{poster}}" playsinline preload="metadata"></video>
             <div class="veil"></div>
-            <div class="tag">Reels · 0:59</div>
-            <button class="play" id="bigPlay" aria-label="Reproduzir vídeo"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg></button>
+            <div class="tag">Reels · {{dur}}</div>
+            <button class="play" id="bigPlay{{i}}" aria-label="Reproduzir vídeo"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg></button>
             <div class="ctrl">
-              <button id="pp" aria-label="Pausar ou reproduzir"><svg viewBox="0 0 24 24" id="ppIco"><path d="M7 4.5v15l13-7.5z"/></svg></button>
-              <div class="bar" id="bar" role="slider" aria-label="Posição do vídeo" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><b id="fill"></b></div>
-              <span class="time" id="time">0:00 / 0:59</span>
-              <button id="mute" aria-label="Ativar ou desativar o som"><svg viewBox="0 0 24 24" id="muteIco"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z"/></svg></button>
+              <button id="pp{{i}}" aria-label="Pausar ou reproduzir"><svg viewBox="0 0 24 24" id="ppIco{{i}}"><path d="M7 4.5v15l13-7.5z"/></svg></button>
+              <div class="bar" id="bar{{i}}" role="slider" aria-label="Posição do vídeo" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><b id="fill{{i}}"></b></div>
+              <span class="time" id="time{{i}}">0:00 / {{dur}}</span>
+              <button id="mute{{i}}" aria-label="Ativar ou desativar o som"><svg viewBox="0 0 24 24" id="muteIco{{i}}"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z"/></svg></button>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="caption panel" aria-labelledby="capL">
-      <div class="label" id="capL"><span>Legenda para aprovação</span><button class="copy" id="copy" type="button">Copiar</button></div>
-      <div class="cap" id="capText">
-        <p class="lead">Reforma tributária não é só assunto de contador. É assunto de gestão.</p>
-        <p>Quem enxerga o impacto antes consegue se planejar, em vez de apenas reagir.</p>
-        <p>Seu escritório já revisou os contratos pensando nisso?</p>
-        <p class="legal">Conteúdo informativo, que não substitui a orientação de um profissional.</p>
-        <p class="tags">#reformatributaria #gestaojuridica #advocacia #escritoriodeadvocacia #gestao</p>
-      </div>
+    <section class="caption panel" aria-labelledby="capL{{i}}">
+      <div class="label" id="capL{{i}}"><span>Legenda para aprovação</span><button class="copy" id="copy{{i}}" type="button">Copiar</button></div>
+      <div class="cap" id="capText{{i}}">{{caption}}</div>
     </section>
 
-    <section class="decision" id="decision" aria-labelledby="decH">
-      <h2 id="decH">Sua decisão</h2>
-      <p>Assista ao vídeo, leia a legenda e escolha uma opção.</p>
-      <div id="formArea">
+    <section class="decision" id="decision{{i}}" aria-labelledby="decH{{i}}">
+      <h2 id="decH{{i}}">Sua decisão{{decsuffix}}</h2>
+      <p>Assista aos vídeos, leia as legendas e escolha uma opção.</p>
+      <div id="formArea{{i}}">
         <div class="opts" role="radiogroup" aria-label="Decisão sobre o vídeo">
           <div class="opt">
-            <input type="radio" name="dec" id="d-ok" value="Aprovado">
-            <label for="d-ok"><span class="ico"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span class="t"><b>Aprovado</b><span>Pode publicar como está</span></span></label>
+            <input type="radio" name="dec{{i}}" id="d-ok{{i}}" value="Aprovado">
+            <label for="d-ok{{i}}"><span class="ico"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span class="t"><b>Aprovado</b><span>Pode publicar como está</span></span></label>
           </div>
           <div class="opt rose">
-            <input type="radio" name="dec" id="d-edit" value="Alteração solicitada">
-            <label for="d-edit"><span class="ico"><svg viewBox="0 0 24 24"><path d="M4 20l4.2-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20zM13.5 7.5l3 3"/></svg></span><span class="t"><b>Quero alterações</b><span>Vou descrever o ajuste</span></span></label>
+            <input type="radio" name="dec{{i}}" id="d-edit{{i}}" value="Alteração solicitada">
+            <label for="d-edit{{i}}"><span class="ico"><svg viewBox="0 0 24 24"><path d="M4 20l4.2-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20zM13.5 7.5l3 3"/></svg></span><span class="t"><b>Quero alterações</b><span>Vou descrever o ajuste</span></span></label>
           </div>
         </div>
-        <div class="reveal" id="reveal"><div>
+        <div class="reveal" id="reveal{{i}}"><div>
           <div class="field">
-            <label for="alteracoes">O que você gostaria de alterar?</label>
-            <textarea id="alteracoes" maxlength="1500" placeholder="Escreva aqui o que deve mudar no vídeo ou na legenda."></textarea>
-            <div class="hint" id="hint"></div>
+            <label for="alteracoes{{i}}">O que você gostaria de alterar?</label>
+            <textarea id="alteracoes{{i}}" maxlength="1500" placeholder="Escreva aqui o que deve mudar no vídeo ou na legenda."></textarea>
+            <div class="hint" id="hint{{i}}"></div>
           </div>
         </div></div>
-        <button class="send" id="send" type="button" aria-disabled="true"><span id="sendTxt">Escolha uma opção</span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
-        <div class="live" id="live" role="status" aria-live="polite"></div>
+        <button class="send" id="send{{i}}" type="button" aria-disabled="true"><span id="sendTxt{{i}}">Escolha uma opção</span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+        <div class="live" id="live{{i}}" role="status" aria-live="polite"></div>
       </div>
-      <div id="doneArea" hidden></div>
+      <div id="doneArea{{i}}" hidden></div>
     </section>
   </div>
-</main>
-
-<script>
-(function () {
-  var ENDPOINT = 'https://script.google.com/macros/s/AKfycbzCs6fICX-71VcEdHr0mL2vV4iXpwOMYN0t1po0fQdNL_VYuoQPf1cHCU1ItCuJqZQFJA/exec';
-  var VIDEO_NAME = 'Reforma tributária';
-  var $ = function (id) { return document.getElementById(id); };
+`;
+  var state = VIDEOS.map(function () { return ''; });
+  function globalStatus() {
+    var ok = state.filter(function (x) { return x === 'ok'; }).length, ed = state.filter(function (x) { return x === 'edit'; }).length, n = VIDEOS.length, done = ok + ed;
+    var s = done === 0 ? 'wait' : (ed ? 'edit' : (ok === n ? 'ok' : 'wait'));
+    $('chip').setAttribute('data-s', s);
+    $('chipTxt').textContent = done === 0 ? 'Aguardando sua aprovação' : done < n ? done + ' de ' + n + ' respondidos' : (ed ? 'Alterações solicitadas' : 'Tudo aprovado');
+    $('stStatus').textContent = done === 0 ? 'Pendente' : done < n ? done + '/' + n : (ed ? 'Em ajuste' : 'Aprovado');
+  }
+  var host = $('aprovar');
+  VIDEOS.forEach(function (cfg, i) {
+    var html = TPL.replace(/\{\{i\}\}/g, i).replace(/\{\{n\}\}/g, String(i + 1)).replace(/\{\{total\}\}/g, String(VIDEOS.length))
+      .replace('{{title}}', cfg.title).replace('{{proposta}}', cfg.proposta).replace('{{src}}', cfg.src).replace('{{poster}}', cfg.poster)
+      .replace(/\{\{dur\}\}/g, cfg.dur).replace('{{caption}}', cfg.caption).replace('{{decsuffix}}', VIDEOS.length > 1 ? ' · vídeo ' + (i + 1) : '');
+    var sec = document.createElement('div'); sec.innerHTML = html; host.appendChild(sec.firstElementChild);
+  });
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ---------- rede de partículas ---------- */
@@ -381,14 +396,16 @@ html { scroll-behavior: smooth; }
   window.addEventListener('resize', function () { size(); if (reduce) frame(); });
   window.addEventListener('pointermove', function (e) { mouse.x = e.clientX; mouse.y = e.clientY; });
 
+  VIDEOS.forEach(function (cfg, i) {
+    var $ = function (id) { return document.getElementById(id + i); };
   /* ---------- player ---------- */
   var v = $('vid'), fr = $('frame'), amb = $('amb'), actx = amb.getContext('2d');
   var PLAY = 'M7 4.5v15l13-7.5z', PAUSE = 'M6 4.5h4.2v15H6zM13.8 4.5H18v15h-4.2z';
   var MUTED = 'M4 9v6h4l5 4V5L8 9H4zm12.2.8 4.6 4.4m0-4.4-4.6 4.4', ON = 'M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z';
   function fmt(s) { s = Math.max(0, Math.floor(s || 0)); return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2); }
-  function fmtD(s) { return fmt(Math.round(s || 59)); }
+  function fmtD(s) { return fmt(Math.round(s || cfg.fallback)); }
   function ambient() { try { actx.drawImage(v, 0, 0, 36, 64); } catch (e) {} }
-  var poster = new Image(); poster.onload = function () { try { actx.drawImage(poster, 0, 0, 36, 64); } catch (e) {} }; poster.src = 'poster.jpg';
+  var poster = new Image(); poster.onload = function () { try { actx.drawImage(poster, 0, 0, 36, 64); } catch (e) {} }; poster.src = cfg.poster;
   var raf;
   function loop() { ambient(); update(); raf = requestAnimationFrame(loop); }
   function update() {
@@ -431,7 +448,7 @@ html { scroll-behavior: smooth; }
     send.setAttribute('aria-disabled', choice ? 'false' : 'true');
     ta.tabIndex = choice === 'Alteração solicitada' ? 0 : -1;
   }
-  document.querySelectorAll('input[name=dec]').forEach(function (r) {
+  document.querySelectorAll('input[name=dec'+i+']').forEach(function (r) {
     r.addEventListener('change', function () { choice = r.value; hint.textContent = ''; hint.className = 'hint'; ta.classList.remove('err'); sync(); if (choice !== 'Aprovado') setTimeout(function () { ta.focus({ preventScroll: true }); }, 450); });
   });
   ta.addEventListener('input', function () { ta.classList.remove('err'); hint.className = 'hint'; hint.textContent = ta.value.length > 1200 ? (1500 - ta.value.length) + ' caracteres restantes' : ''; });
@@ -445,7 +462,7 @@ html { scroll-behavior: smooth; }
     }
     busy = true; send.setAttribute('aria-disabled', 'true'); $('sendTxt').textContent = 'Enviando…';
     var live = $('live'); live.className = 'live'; live.textContent = '';
-    var body = new URLSearchParams({ video: VIDEO_NAME, status: choice, alteracoes: alt });
+    var body = new URLSearchParams({ video: cfg.name, status: choice, alteracoes: alt });
     fetch(ENDPOINT, { method: 'POST', mode: 'no-cors', body: body })
       .then(function () { busy = false; showDone(); })
       .catch(function () { busy = false; sync(); live.className = 'live err'; live.textContent = 'Não foi possível enviar agora. Confira a conexão e tente novamente.'; });
@@ -455,12 +472,13 @@ html { scroll-behavior: smooth; }
     d.innerHTML = '<div class="done ' + (ok ? 'ok' : 'edit') + '"><svg viewBox="0 0 84 84"><circle cx="42" cy="42" r="40"/><path d="' + (ok ? 'M27 43l10 10 20-22' : 'M30 54l3-11 20-20 8 8-20 20-11 3z') + '"/></svg>' +
       '<h3>' + (ok ? 'Vídeo aprovado' : 'Alterações enviadas') + '</h3>' +
       '<p>' + (ok ? 'Obrigada! A Raphaela já recebe o aviso para seguir com a publicação.' : 'Obrigada! Recebemos o seu pedido e vamos ajustar o vídeo.') + '</p>' +
-      '<div class="links"><button type="button" id="again">Mudar resposta</button></div></div>';
+      '<div class="links"><button type="button" id="again' + i + '">Mudar resposta</button></div></div>';
     $('formArea').hidden = true; d.hidden = false;
-    $('chip').setAttribute('data-s', ok ? 'ok' : 'edit'); $('chipTxt').textContent = ok ? 'Aprovado' : 'Alteração solicitada';
-    $('stStatus').textContent = ok ? 'Aprovado' : 'Em ajuste';
-    $('again').addEventListener('click', function () { d.hidden = true; $('formArea').hidden = false; $('chip').setAttribute('data-s', 'wait'); $('chipTxt').textContent = 'Aguardando sua aprovação'; $('stStatus').textContent = 'Pendente'; sync(); });
+    state[i] = ok ? 'ok' : 'edit'; globalStatus();
+    $('again').addEventListener('click', function () { d.hidden = true; $('formArea').hidden = false; state[i] = ''; globalStatus(); sync(); });
   }
+  sync();
+  });
   /* ---------- introdução ---------- */
   (function () {
     var g = $('ticks'), NS = 'http://www.w3.org/2000/svg', n = 120;
@@ -477,7 +495,7 @@ html { scroll-behavior: smooth; }
     function prog() { var h = document.documentElement.scrollHeight - window.innerHeight; $('prog').style.width = (h > 0 ? Math.min(100, window.scrollY / h * 100) : 0) + '%'; }
     window.addEventListener('scroll', prog, { passive: true }); prog();
   })();
-  sync();
+  globalStatus();
 })();
 </script>
 </body>
